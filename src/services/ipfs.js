@@ -4,6 +4,7 @@ const crypto = require('crypto');
 const fs = require('fs').promises;
 const path = require('path');
 const os = require('os');
+const { NFTStorage, File } = require('nft.storage');
 
 class IPFSService {
     constructor() {
@@ -442,6 +443,21 @@ class IPFSService {
     delay(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
+}
+
+function getAccessToken() {
+    return process.env.NFTSTORAGE_TOKEN;
+}
+
+function makeStorageClient() {
+    return new NFTStorage({ token: getAccessToken() });
+}
+
+async function uploadApiCode(codeString, { filename }) {
+    const client = makeStorageClient();
+    const file = new File([codeString], filename, { type: 'text/plain' });
+    const cid = await client.storeBlob(file);
+    return { cid };
 }
 
 module.exports = new IPFSService(); 

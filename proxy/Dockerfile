@@ -19,7 +19,11 @@ FROM alpine:latest
 
 RUN apk --no-cache add ca-certificates
 
-WORKDIR /root/
+WORKDIR /app
+
+# Create a non-root user
+RUN adduser -D myuser
+USER myuser
 
 # Copy the binary from builder stage
 COPY --from=builder /app/main .

@@ -1,11 +1,13 @@
 const mongoose = require('mongoose');
+const express = require('express');
+const router = express.Router();
 
 const versionSchema = new mongoose.Schema({
     version: {
         type: String,
         required: true
     },
-    ipfsHash: {
+    code: {
         type: String,
         required: true
     },
@@ -90,6 +92,16 @@ const apiSchema = new mongoose.Schema({
 apiSchema.pre('save', function (next) {
     this.updatedAt = Date.now();
     next();
+});
+
+// Add this route for API testing
+router.post('/apis/:id/test', async (req, res) => {
+    // For now, just return a test response
+    res.json({
+        message: "Test endpoint working!",
+        id: req.params.id,
+        body: req.body
+    });
 });
 
 module.exports = mongoose.model('Api', apiSchema); 

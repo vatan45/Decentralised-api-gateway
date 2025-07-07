@@ -37,7 +37,7 @@ router.post('/:apiId', [
             });
         }
 
-        // Get current version IPFS hash
+        // Get current version
         const currentVersion = api.versions.find(v => v.version === api.currentVersion);
         if (!currentVersion) {
             return res.status(400).json({
@@ -64,7 +64,7 @@ router.post('/:apiId', [
         };
 
         // Execute API
-        const result = await runtimeExecutor.executeApi(currentVersion.ipfsHash, requestData);
+        const result = await runtimeExecutor.executeApi(currentVersion.code, requestData);
 
         // Set execution ID for usage tracking
         req.executionId = result.executionId;

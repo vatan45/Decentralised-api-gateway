@@ -64,6 +64,50 @@ class RuntimeExecutor {
     }
 
     /**
+     * Execute API code securely in a Docker container
+     * @param {string} apiCode - Raw API code
+     * @param {Object} requestData - Request data (method, headers, body, etc.)
+     * @returns {Object} - Execution result with response, logs, and metadata
+     */
+    async executeApiFromCode(apiCode, requestData = {}) {
+        const executionId = uuidv4();
+        const tempDir = path.join(os.tmpdir(), `api-exec-${executionId}`);
+
+        try {
+            console.log(`[${executionId}] Starting API execution for raw code`);
+
+            // Create temporary directory and write code
+            await this.prepareExecutionEnvironment(tempDir, apiCode, requestData);
+
+            // Execute in Docker container
+            const result = await this.runInContainer(executionId, tempDir, requestData);
+
+            console.log(`[${executionId}] API execution completed successfully`);
+            return {
+                success: true,
+                executionId,
+                response: result.response,
+                logs: result.logs,
+                executionTime: result.executionTime,
+                memoryUsage: result.memoryUsage
+            };
+
+        } catch (error) {
+            console.error(`[${executionId}] API execution failed:`, error);
+            return {
+                success: false,
+                executionId,
+                error: error.message,
+                logs: error.logs || [],
+                executionTime: Date.now() - (error.startTime || Date.now())
+            };
+        } finally {
+            // Cleanup
+            await this.cleanup(tempDir);
+        }
+    }
+
+    /**
      * Fetch API code from IPFS
      */
     async fetchCodeFromIPFS(ipfsHash) {
@@ -82,7 +126,9 @@ class RuntimeExecutor {
         await fs.mkdir(tempDir, { recursive: true });
 
         // Write API code
-        await fs.writeFile(path.join(tempDir, 'api.js'), apiCode);
+        if (apiCode) {
+            await fs.writeFile(path.join(tempDir, 'api.js'), apiCode);
+        }
 
         // Write request data
         await fs.writeFile(
@@ -370,6 +416,13 @@ CMD ["/app/run.sh"]
         } catch (error) {
             throw new Error(`Failed to get runtime stats: ${error.message}`);
         }
+    }
+
+    /**
+     * Alias for compatibility: run user code in Docker
+     */
+    async runCodeInDocker(code, input) {
+        return this.executeApiFromCode(code, input);
     }
 }
 

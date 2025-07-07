@@ -69,6 +69,7 @@ router.post('/login', [
 
     try {
         let user = await User.findOne({ email }).select('+password');
+        console.log('User found:', user);
 
         if (!user) {
             return res.status(400).json({
@@ -78,6 +79,7 @@ router.post('/login', [
         }
 
         const isMatch = await user.matchPassword(password);
+        console.log('Password match:', isMatch);
 
         if (!isMatch) {
             return res.status(400).json({

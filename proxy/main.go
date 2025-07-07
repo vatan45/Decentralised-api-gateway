@@ -69,7 +69,7 @@ var (
 func main() {
 	// Load configuration
 	config = Config{
-		MongoURI:    getEnv("MONGO_URI", "mongodb://localhost:27017"),
+		MongoURI:    getEnv("MONGO_URI", "mongodb+srv://vmro45:Vmro45%407856@coddunity.kyll8.mongodb.net/DAG"),
 		RedisURI:    getEnv("REDIS_URI", "redis://localhost:6379"),
 		ExecutorURL: getEnv("EXECUTOR_URL", "http://localhost:3001"),
 		Port:        getEnv("PROXY_PORT", "8080"),
@@ -146,6 +146,25 @@ func setupProxyRoutes(router *gin.Engine) {
 	// Health check endpoint
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{"status": "healthy"})
+	})
+
+	// New route for testing
+	router.GET("/apis/:id/test", func(c *gin.Context) {
+		apiID := c.Param("id")
+		api, err := getAPIMetadata(apiID)
+		if err != nil {
+			c.JSON(404, gin.H{"error": "API not found"})
+			return
+		}
+
+		// Find the endpoint (for demo, just use the first one)
+		endpoint := api.Endpoints[0]
+		if endpoint.Path == "/example" && endpoint.Method == "GET" {
+			c.String(200, "hello world")
+			return
+		}
+
+		c.JSON(400, gin.H{"error": "Endpoint logic not implemented"})
 	})
 }
 

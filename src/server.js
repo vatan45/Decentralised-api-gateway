@@ -3,6 +3,7 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const connectDB = require('./config/database');
 const billingWorker = require('./services/billingWorker');
+const apiRoutes = require('./routes/api');
 
 // Load env vars
 dotenv.config();
@@ -18,9 +19,11 @@ app.use(express.json());
 // Enable CORS
 app.use(cors());
 
+
+
 // Mount routers
 app.use('/api/auth', require('./routes/auth'));
-app.use('/api/apis', require('./routes/api'));
+app.use('/api', apiRoutes);
 app.use('/api/executor', require('./routes/executor'));
 app.use('/api/usage', require('./routes/usage'));
 app.use('/api/ipfs', require('./routes/ipfs'));
